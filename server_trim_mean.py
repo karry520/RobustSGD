@@ -7,9 +7,9 @@ import Common.config as config
 import numpy as np
 
 
-class ClearDenseServer(FlGrpcServer):
+class Trim_Mean_Server(FlGrpcServer):
     def __init__(self, address, port, config, handler):
-        super(ClearDenseServer, self).__init__(config=config)
+        super(Trim_Mean_Server, self).__init__(config=config)
         self.address = address
         self.port = port
         self.config = config
@@ -22,19 +22,28 @@ class ClearDenseServer(FlGrpcServer):
         return GradResponse_float(grad_upd=rst)
 
 
-class AvgGradientHandler(Handler):
-    def __init__(self, num_workers):
-        super(AvgGradientHandler, self).__init__()
+class Trim_Mean_GradientHandler(Handler):
+    def __init__(self, num_workers, f=1):
+        super(Trim_Mean_GradientHandler, self).__init__()
         self.num_workers = num_workers
+        self.f = f
 
     def computation(self, data_in):
-        grad_in = np.array(data_in).reshape((self.num_workers, -1)).mean(axis=0)
-        return grad_in.tolist()
+        grad_in = np.array(data_in).reshape((self.num_workers, -1))
+        tm_rst = self.trim_mean(data=grad_in, f=self.f)
+        return tm_rst.tolist()
+
+    def trim_mean(self, data, f):
+        total = np.sum(data, axis=0)
+        l_rst = [np.sum(data[np.argpartition(data[:, x], f)[:f], x]) for x in range(data.shape[1])]
+        b_rst = [np.sum(data[np.argpartition(data[:, x], -f)[-f:], x]) for x in range(data.shape[1])]
+
+        return (np.array(total) - np.array(l_rst) - np.array(b_rst)) / (data.shape[0] - 2 * f)
 
 
 if __name__ == "__main__":
-    gradient_handler = AvgGradientHandler(num_workers=config.num_workers)
+    gradient_handler = Trim_Mean_GradientHandler(num_workers=config.num_workers, f=config.f)
 
-    clear_server = ClearDenseServer(address=config.server1_address, port=config.port1, config=config,
+    clear_server = Trim_Mean_Server(address=config.server1_address, port=config.port1, config=config,
                                     handler=gradient_handler)
     clear_server.start()

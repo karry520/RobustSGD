@@ -7,9 +7,9 @@ import Common.config as config
 import numpy as np
 
 
-class ClearDenseServer(FlGrpcServer):
+class KrumServer(FlGrpcServer):
     def __init__(self, address, port, config, handler):
-        super(ClearDenseServer, self).__init__(config=config)
+        super(KrumServer, self).__init__(config=config)
         self.address = address
         self.port = port
         self.config = config
@@ -22,19 +22,38 @@ class ClearDenseServer(FlGrpcServer):
         return GradResponse_float(grad_upd=rst)
 
 
-class AvgGradientHandler(Handler):
-    def __init__(self, num_workers):
-        super(AvgGradientHandler, self).__init__()
+class KrumGradientHandler(Handler):
+    def __init__(self, num_workers, f=1):
+        super(KrumGradientHandler, self).__init__()
         self.num_workers = num_workers
+        self.f = f
 
     def computation(self, data_in):
-        grad_in = np.array(data_in).reshape((self.num_workers, -1)).mean(axis=0)
-        return grad_in.tolist()
+        grad_in = np.array(data_in).reshape((self.num_workers, -1))
+        rst = self.krum(data_in=grad_in, f=self.f)
+        return rst.tolist()
+
+    def krum(self, data_in, f):
+        score_table = np.zeros((self.num_workers, self.num_workers))
+        idx = 0
+        for i in range(self.num_workers - 1):
+            for j in range(i + 1, self.num_workers):
+                tmp = data_in[i] - data_in[j]
+                tmp = np.sum((tmp * tmp))
+                score_table[i][j] = tmp
+                score_table[j][i] = tmp
+                idx += 1
+
+        closest_set = self.num_workers - f - 1
+        score = [np.sum(score_table[x, np.argpartition(score_table[x, :], closest_set)[:closest_set]]) for x in
+                 range(self.num_workers)]
+
+        return data_in[np.argmin(score)]
 
 
 if __name__ == "__main__":
-    gradient_handler = AvgGradientHandler(num_workers=config.num_workers)
+    gradient_handler = KrumGradientHandler(num_workers=config.num_workers, f=config.f)
 
-    clear_server = ClearDenseServer(address=config.server1_address, port=config.port1, config=config,
-                                    handler=gradient_handler)
+    clear_server = KrumServer(address=config.server1_address, port=config.port1, config=config,
+                              handler=gradient_handler)
     clear_server.start()

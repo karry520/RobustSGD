@@ -13,17 +13,20 @@ import grpc
 from Common.Grpc.fl_grpc_pb2_grpc import FL_GrpcStub
 
 import argparse
+import numpy as np
 
 
-class ClearDenseClient(WorkerBase):
-    def __init__(self, client_id, model, loss_func, train_iter, test_iter, config, optimizer, grad_stub):
-        super(ClearDenseClient, self).__init__(model=model, loss_func=loss_func, train_iter=train_iter,
+class GaussianClient(WorkerBase):
+    def __init__(self, client_id, model, loss_func, train_iter, test_iter, config, optimizer, grad_stub, mu, sigma):
+        super(GaussianClient, self).__init__(model=model, loss_func=loss_func, train_iter=train_iter,
                                                test_iter=test_iter, config=config, optimizer=optimizer)
         self.client_id = client_id
         self.grad_stub = grad_stub
+        self.mu = mu
+        self.sigma = sigma
 
     def update(self):
-        gradients = super().get_gradients()
+        gradients = np.random.normal(loc=self.mu, scale=self.sigma, size=len(super().get_gradients()))
 
         res_grad_upd = self.grad_stub.UpdateGrad_float(GradRequest_float(id=self.client_id, grad_ori=gradients))
 
@@ -54,8 +57,8 @@ if __name__ == '__main__':
 
         grad_stub = FL_GrpcStub(grad_channel)
 
-        client = ClearDenseClient(client_id=args.i, model=model, loss_func=loss_func, train_iter=train_iter,
-                                  test_iter=test_iter, config=config, optimizer=optimizer, grad_stub=grad_stub)
+        client = GaussianClient(client_id=args.i, model=model, loss_func=loss_func, train_iter=train_iter,
+                                  test_iter=test_iter, config=config, optimizer=optimizer, grad_stub=grad_stub, mu=10, sigma=20)
 
         client.fl_train(times=args.t)
         client.write_acc_record(fpath="Eva/clear_avg_acc.txt", info="clear_avg_acc_worker")
