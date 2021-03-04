@@ -28,7 +28,18 @@ class FlGrpcServer(FL_GrpcServicer):
             con.wait()
         else:
             rst = [data_ori[k] for k in sorted(data_ori.keys())]
+            # add attack
+            if self.config.attack_type == "gaussian":
+                for i in range(self.config.f):
+                    rst[i] = np.random.normal(self.config.mu[i], self.config.sigma[i], len(rst[i])).tolist()
+            elif type == "omniscient":
+                rst[0] = (-(np.sum(rst, axis=0) - rst[0])).tolist()
+            elif type == "bitflip":
+                pass
+            else:
+                pass
             rst = np.array(rst).flatten()
+            # add attack
             data_upd = handler(data_in=rst)
             data_ori = {}
             num = 0

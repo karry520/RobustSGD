@@ -23,9 +23,10 @@ class Median_Server(FlGrpcServer):
 
 
 class Median_GradientHandler(Handler):
-    def __init__(self, num_workers):
+    def __init__(self, num_workers, attacker):
         super(Median_GradientHandler, self).__init__()
         self.num_workers = num_workers
+        self.attacker = attacker
 
     def computation(self, data_in):
         grad_in = np.array(data_in).reshape((self.num_workers, -1))

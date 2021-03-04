@@ -28,7 +28,9 @@ class AvgGradientHandler(Handler):
         self.num_workers = num_workers
 
     def computation(self, data_in):
-        grad_in = np.array(data_in).reshape((self.num_workers, -1)).mean(axis=0)
+        grad_in = np.array(data_in).reshape((self.num_workers, -1))
+
+        grad_in = grad_in.mean(axis=0)
         return grad_in.tolist()
 
 

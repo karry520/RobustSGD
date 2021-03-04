@@ -1,5 +1,12 @@
 import numpy as np
 
-data = np.random.normal(0, 2, 10)
+data_in = np.random.randint(0, 100, size=20).reshape(4,5).tolist()
+print(data_in)
+# data_in[0] = np.random.normal(0, 2, len(data_in[0])).tolist()
 
-print(data)
+
+tmp = data_in[0]
+data_in[0] = (-(np.sum(data_in, axis=0) - data_in[0])).tolist()
+
+
+print(data_in)
