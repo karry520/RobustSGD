@@ -23,10 +23,9 @@ class Median_Server(FlGrpcServer):
 
 
 class Median_GradientHandler(Handler):
-    def __init__(self, num_workers, attacker):
+    def __init__(self, num_workers):
         super(Median_GradientHandler, self).__init__()
         self.num_workers = num_workers
-        self.attacker = attacker
 
     def computation(self, data_in):
         grad_in = np.array(data_in).reshape((self.num_workers, -1))
@@ -38,5 +37,5 @@ if __name__ == "__main__":
     gradient_handler = Median_GradientHandler(num_workers=config.num_workers)
 
     clear_server = Median_Server(address=config.server1_address, port=config.port1, config=config,
-                                    handler=gradient_handler)
+                                 handler=gradient_handler)
     clear_server.start()

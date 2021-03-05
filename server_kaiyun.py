@@ -33,46 +33,31 @@ class KaiyunGradientHandler(Handler):
         return rst
 
     def kaiyun(self, data_in):
-        data_mean1 = data_in.mean(axis=0)
-        workers, width = data_in.shape[0], data_in.shape[1]
+        first_mean = np.mean(data_in, axis=0)
 
-        rst = []
-        for i in range(width):
-            b1, l1 = [], []
-            for j in range(workers):
-                tmp = data_in[j][i]
-                if tmp >= data_mean1[i]:
-                    b1 += [tmp]
-                else:
-                    l1 += [tmp]
-            data_mean2 = 0
-            b2, l2 = [], []
-            if len(b1) >= len(l1):
-                data_mean2 = np.mean(b1)
-                for k in range(len(b1)):
-                    if b1[k] >= data_mean2:
-                        b2 += [b1[k]]
-                    else:
-                        l2 += [b1[k]]
-            else:
-                data_mean2 = np.mean(l1)
-                for k in range(len(l1)):
-                    if l1[k] >= data_mean2:
-                        b2 += [l1[k]]
-                    else:
-                        l2 += [l1[k]]
+        mask1 = first_mean >= data_in
+        compare1 = np.array(np.sum(mask1, axis=0) > np.sum(~mask1, axis=0), dtype=int)
 
-            if len(b2) >= len(l2):
-                rst += [np.mean(b2)]
-            else:
-                rst += [np.mean(l2)]
+        tmp1 = mask1 & compare1
+        tmp2 = ~mask1 & ~compare1
+        mask = tmp1 | tmp2
 
-        return rst
+        second_mean = np.sum(data_in * mask, axis=0) / np.sum(mask, axis=0)
+
+        mask2 = second_mean >= data_in
+        tmp1 = mask2 & mask
+        tmp2 = ~mask2 & mask
+        compare2 = np.array(np.sum(tmp1, axis=0) > np.sum(tmp2, axis=0), dtype=int)
+
+        mask = (tmp1 & compare2) | (tmp2 & ~compare2)
+
+        # return (np.sum(data_in * mask, axis=0) / np.sum(mask, axis=0)).tolist()
+        return data_in[np.argmax(np.sum(mask, axis=1)), :]
 
 
 if __name__ == "__main__":
     gradient_handler = KaiyunGradientHandler(num_workers=config.num_workers)
 
     clear_server = KaiyunServer(address=config.server1_address, port=config.port1, config=config,
-                                    handler=gradient_handler)
+                                handler=gradient_handler)
     clear_server.start()

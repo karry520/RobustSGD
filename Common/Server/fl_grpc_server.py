@@ -32,9 +32,9 @@ class FlGrpcServer(FL_GrpcServicer):
             if self.config.attack_type == "gaussian":
                 for i in range(self.config.f):
                     rst[i] = np.random.normal(self.config.mu[i], self.config.sigma[i], len(rst[i])).tolist()
-            elif type == "omniscient":
+            elif self.config.attack_type == "omniscient":
                 rst[0] = (-(np.sum(rst, axis=0) - rst[0])).tolist()
-            elif type == "bitflip":
+            elif self.config.attack_type == "bit_flip":
                 pass
             else:
                 pass

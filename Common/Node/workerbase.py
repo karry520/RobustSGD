@@ -132,9 +132,11 @@ class WorkerBase(metaclass=ABCMeta):
                 train_acc_sum += (y_hat.argmax(dim=1) == y).sum().cpu().item()
                 n += y.shape[0]
                 batch_count += 1
+                # print("batch_count", batch_count)
 
             test_acc = evaluate_accuracy(self.test_iter, self.model)
             self.acc_record += [test_acc]
+            # print("batch_count", batch_count)
             print('epoch %d, loss %.4f, train acc %.3f, test acc %.3f, time %.1f sec'
                   % (epoch + 1, train_l_sum / batch_count, train_acc_sum / n, test_acc, time.time() - start))
 
