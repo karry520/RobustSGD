@@ -37,8 +37,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    yaml_path = 'Log/log.yaml'
-    setup_logging(default_path=yaml_path)
+    # yaml_path = 'Log/log.yaml'
+    # setup_logging(default_path=yaml_path)
 
     model = LeNet()
     batch_size = 512
@@ -58,4 +58,4 @@ if __name__ == '__main__':
                                   test_iter=test_iter, config=config, optimizer=optimizer, grad_stub=grad_stub)
 
         client.fl_train(times=args.t)
-        client.write_acc_record(fpath="Eva/clear_avg_acc.txt", info="clear_avg_acc_worker")
+        client.write_acc_record(fpath="Eva/clear_avg_acc.txt", info="gaussian")

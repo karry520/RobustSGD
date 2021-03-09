@@ -1,17 +1,19 @@
-num_epochs = 20
-num_workers = 4
+num_epochs = 25
+num_workers = 20
 
 idx_max_length = 50000
 grad_shift = 2 ** 20
 
-f = 2
-mu = [10, -10]
-sigma = [20, 20]
+f = 5
+mu = [10, -10, 20, -20, 0, 100]
+sigma = [20, 20, 1, 100, 100, 100]
 
-attack_type = "gaussian"
+grad_scale = [0, 0.1, -0.1, -23, 100]
+
+# attack_type = "gaussian"
 # attack_type = "omniscient"
 # attack_type = "bit_flip"
-# attack_type = "normal"
+attack_type = "grad_scale"
 # attack_type = "label_inversion"
 # attack_type = "label_error"
 # attack_type = "normal"
@@ -22,8 +24,8 @@ gradient_frac = 2 ** 10
 gradient_rand = 2 ** 8
 
 # server1_address = "127.0.0.1"
-server1_address = "192.168.126.12"
-port1 = 51010
+server1_address = "192.168.124.163"
+port1 = 51019
 
 server2_address = "127.0.0.1"
 port2 = 51011

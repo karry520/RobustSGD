@@ -36,6 +36,9 @@ class FlGrpcServer(FL_GrpcServicer):
                 rst[0] = (-(np.sum(rst, axis=0) - rst[0])).tolist()
             elif self.config.attack_type == "bit_flip":
                 pass
+            elif self.config.attack_type == "grad_scale":
+                for i in range(self.config.f):
+                    rst[i] = (np.array(rst[i]) * self.config.grad_scale[i]).tolist()
             else:
                 pass
             rst = np.array(rst).flatten()
@@ -50,7 +53,7 @@ class FlGrpcServer(FL_GrpcServicer):
         return data_upd
 
     def start(self):
-        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        server = grpc.server(futures.ThreadPoolExecutor(max_workers=21))
         add_FL_GrpcServicer_to_server(self, server)
 
         target = self.address + ":" + str(self.port)

@@ -29,10 +29,10 @@ class KaiyunGradientHandler(Handler):
 
     def computation(self, data_in):
         grad_in = np.array(data_in).reshape((self.num_workers, -1))
-        rst = self.kaiyun(data_in=grad_in)
+        rst = self.kaiyun(data_in=grad_in, num_workers=self.num_workers)
         return rst
 
-    def kaiyun(self, data_in):
+    def kaiyun(self, data_in, num_workers):
         first_mean = np.mean(data_in, axis=0)
 
         mask1 = first_mean >= data_in
@@ -51,8 +51,17 @@ class KaiyunGradientHandler(Handler):
 
         mask = (tmp1 & compare2) | (tmp2 & ~compare2)
 
-        # return (np.sum(data_in * mask, axis=0) / np.sum(mask, axis=0)).tolist()
-        return data_in[np.argmax(np.sum(mask, axis=1)), :]
+        mask_sum = np.sum(mask, axis=1)
+        f = int(num_workers / 4) + 2
+        mask_index = np.argpartition(mask_sum, -f)[-f:]
+        mask_choise = mask[mask_index]
+        data_choise = data_in[mask_index]
+        data_nomal = np.sum(np.abs(data_choise * mask_choise), axis=1)
+        print("mask_index", mask_index)
+        # print("data_nomal", data_nomal)
+        print("data_choise", np.argmax(data_nomal))
+        return data_choise[np.argmax(data_nomal)].tolist()
+        # return data_in[np.argmax(np.sum(mask, axis=1)), :]
 
 
 if __name__ == "__main__":
