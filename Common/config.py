@@ -1,21 +1,19 @@
-num_epochs = 25
+num_epochs = 30
 num_workers = 20
 
 idx_max_length = 50000
 grad_shift = 2 ** 20
 
-f = 5
+f = 2
 mu = [10, -10, 20, -20, 0, 100]
 sigma = [20, 20, 1, 100, 100, 100]
 
-grad_scale = [0, 0.1, -0.1, -23, 100]
+grad_scale = [0, 100, -0.1, -23, 0.1]
 
-# attack_type = "gaussian"
-# attack_type = "omniscient"
-# attack_type = "bit_flip"
-attack_type = "grad_scale"
 # attack_type = "label_inversion"
-# attack_type = "label_error"
+# attack_type = "gaussian"
+attack_type = "omniscient"
+# attack_type = "grad_scale"
 # attack_type = "normal"
 
 topk = 40

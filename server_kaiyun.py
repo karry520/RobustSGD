@@ -57,11 +57,17 @@ class KaiyunGradientHandler(Handler):
         mask_choise = mask[mask_index]
         data_choise = data_in[mask_index]
         data_nomal = np.sum(np.abs(data_choise * mask_choise), axis=1)
-        print("mask_index", mask_index)
-        # print("data_nomal", data_nomal)
-        print("data_choise", np.argmax(data_nomal))
-        return data_choise[np.argmax(data_nomal)].tolist()
+        data_nomal_mean = np.mean(data_nomal, axis=0)
+        data_choise = data_choise * np.array(data_nomal > data_nomal_mean, dtype=int).reshape(f, 1)
+
+        print("mask_index:", mask_index)
+        print("data_nomal:", data_nomal)
+        print("data_nomal mean:", data_nomal_mean)
+        print("data_choise:", np.array(data_nomal > data_nomal_mean, dtype=int))
+
+        # return data_choise[np.argmax(data_nomal)].tolist()
         # return data_in[np.argmax(np.sum(mask, axis=1)), :]
+        return np.mean(data_choise, axis=0).tolist()
 
 
 if __name__ == "__main__":

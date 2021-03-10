@@ -106,4 +106,4 @@ if __name__ == '__main__':
                                   test_iter=test_iter, config=config, optimizer=optimizer, grad_stub=grad_stub)
 
         client.fl_train(times=args.t)
-        client.write_acc_record(fpath="Eva/clear_avg_acc.txt", info="clear_avg_acc_worker")
+        client.write_acc_record(fpath="Eva/kaiyun.txt", info="clear_avg_acc_worker")
