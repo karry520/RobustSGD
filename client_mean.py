@@ -36,7 +36,8 @@ if __name__ == '__main__':
     parser.add_argument('-t', type=int, default=10, help="train times locally")
     parser.add_argument('-m', type=str, help="info")
     parser.add_argument('-f', type=str, help="file path")
-
+    parser.add_argument('-w', type=int, help="num_workers")
+    
     args = parser.parse_args()
 
     # yaml_path = 'Log/log.yaml'
@@ -44,7 +45,7 @@ if __name__ == '__main__':
 
     model = LeNet()
     batch_size = 512
-    train_iter, test_iter = load_data_fashion_mnist(batch_size=batch_size, root='Data/FashionMNIST')
+    train_iter, test_iter = load_data_fashion_mnist(id=args.i, batch_size=batch_size, root='Data/FashionMNIST', num_workers=args.w)
     lr = 0.001
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     loss_func = nn.CrossEntropyLoss()
