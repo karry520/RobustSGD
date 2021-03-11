@@ -146,7 +146,7 @@ class WorkerBase(metaclass=ABCMeta):
         with open(fpath, 'a+') as f:
             f.write(info + '\n')
             f.write(s)
-            f.write("" * 20)
+            f.write("=" * 20)
 
     @abstractmethod
     def update(self):

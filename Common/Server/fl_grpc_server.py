@@ -13,9 +13,12 @@ data_upd = []
 
 
 class FlGrpcServer(FL_GrpcServicer):
-    def __init__(self, config):
+    def __init__(self, config, attack_type, f, num_workers):
         super(FlGrpcServer, self).__init__()
         self.config = config
+        self.attack_type = attack_type
+        self.f = f
+        self.num_workers = num_workers
 
     def process(self, dict_data, handler):
         global num, data_ori, data_upd
@@ -24,18 +27,21 @@ class FlGrpcServer(FL_GrpcServicer):
 
         con.acquire()
         num += 1
-        if num < self.config.num_workers:
+        if num < self.num_workers:
             con.wait()
         else:
             rst = [data_ori[k] for k in sorted(data_ori.keys())]
             # add attack
-            if self.config.attack_type == "gaussian":
-                for i in range(self.config.f):
+            if self.attack_type == "gaussian":
+                print("gaussian")
+                for i in range(self.f):
                     rst[i] = np.random.normal(self.config.mu[i], self.config.sigma[i], len(rst[i])).tolist()
-            elif self.config.attack_type == "omniscient":
+            elif self.attack_type == "model_negation":
+                print("model negation")
                 rst[0] = (-(np.sum(rst, axis=0) - rst[0])).tolist()
-            elif self.config.attack_type == "grad_scale":
-                for i in range(self.config.f):
+            elif self.attack_type == "grad_scale":
+                print("grad scale")
+                for i in range(self.f):
                     rst[i] = (np.array(rst[i]) * self.config.grad_scale[i]).tolist()
             else:
                 pass

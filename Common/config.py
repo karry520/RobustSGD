@@ -1,10 +1,10 @@
 num_epochs = 30
-num_workers = 20
+# num_workers = 4
 
 idx_max_length = 50000
 grad_shift = 2 ** 20
 
-f = 2
+# f = 1
 mu = [10, -10, 20, -20, 0, 100]
 sigma = [20, 20, 1, 100, 100, 100]
 
@@ -12,7 +12,7 @@ grad_scale = [0, 100, -0.1, -23, 0.1]
 
 # attack_type = "label_inversion"
 # attack_type = "gaussian"
-attack_type = "omniscient"
+# attack_type = "model_negation"
 # attack_type = "grad_scale"
 # attack_type = "normal"
 

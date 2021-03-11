@@ -34,6 +34,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='clear_dense_client')
     parser.add_argument('-i', type=int, help="client's id")
     parser.add_argument('-t', type=int, default=10, help="train times locally")
+    parser.add_argument('-m', type=str, help="info")
+    parser.add_argument('-f', type=str, help="file path")
 
     args = parser.parse_args()
 
@@ -58,4 +60,4 @@ if __name__ == '__main__':
                                   test_iter=test_iter, config=config, optimizer=optimizer, grad_stub=grad_stub)
 
         client.fl_train(times=args.t)
-        client.write_acc_record(fpath="Eva/kaiyun.txt", info="gaussian")
+        client.write_acc_record(fpath=args.f, info=args.m)
