@@ -1,47 +1,73 @@
 # -*- coding: utf-8 -*-
 
-import time
-import torch
-import torchvision
-from torch import nn, optim
-import numpy as np
+
+import smtplib
+from email.header import Header
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
 
 
-def load_data_fashion_mnist(id, batch_size, resize=None, root='./Data/FashionMNIST', num_workers=20):
-    """Download the fashion mnist dataset and then load into memory."""
-    trans = []
-    if resize:
-        trans.append(torchvision.transforms.Resize(size=resize))
-    trans.append(torchvision.transforms.ToTensor())
+def sendMail():
+    # 定义相关数据,请更换自己的真实数据
+    smtpserver = 'smtp.163.com'
+    sender = '18216028246@163.com'
+    # receiver可设置多个，使用“,”分隔
+    receiver = '884816926@qq.com'
+    username = '18216028246@163.com'
+    password = '654123GOOD?'
 
-    transform = torchvision.transforms.Compose(trans)
-    mnist_train = torchvision.datasets.FashionMNIST(root=root, train=True, download=True, transform=transform)
-    mnist_test = torchvision.datasets.FashionMNIST(root=root, train=False, download=True, transform=transform)
+    msg = MIMEMultipart()
+    boby = """
+    <h3>Hi，Kaiyun</h3>
+    <p>实验结果已经出来啦！</p>
+    """
+    mail_body = MIMEText(boby, _subtype='html', _charset='utf-8')
+    msg['Subject'] = Header("实验结果报告", 'utf-8')
+    msg['From'] = sender
+    receivers = receiver
+    toclause = receivers.split(',')
+    msg['To'] = ",".join(toclause)
+    print(msg['To'])
+    msg.attach(mail_body)
 
-    shuffle_dataset = True
-    indices = list(range(len(mnist_train)))
-    print(len(mnist_train))
-    random_seed = 42
+    with open("Eva/1.jpg", "rb") as f:
+        images = MIMEImage(f.read())
 
-    train_split_length = int(len(mnist_train) / num_workers)
-    test_split_length = int(len(mnist_test) / num_workers)
+    images.add_header('Content-ID', '<image1>')
+    msg.attach(images)
 
-    print(train_split_length)
-    print(test_split_length)
-    if shuffle_dataset:
-        np.random.seed(random_seed)
-        np.random.shuffle(indices)
-    train_sub_indices = indices[id * train_split_length: (id + 1) * train_split_length]
-    test_sub_indices = indices[id * test_split_length: (id + 1) * test_split_length]
-
-    train_sampler = torch.utils.data.SubsetRandomSampler(train_sub_indices, generator=None)
-    test_sampler = torch.utils.data.SubsetRandomSampler(test_sub_indices, generator=None)
-
-    train_iter = torch.utils.data.DataLoader(mnist_train, batch_size=batch_size, num_workers=0,
-                                             sampler=train_sampler)
-    test_iter = torch.utils.data.DataLoader(mnist_test, batch_size=batch_size,  num_workers=0,
-                                            sampler=test_sampler)
-
-    return train_iter, test_iter
+    try:
+        smtp = smtplib.SMTP()
+        smtp.connect(smtpserver)
+        smtp.login(username, password)
+        smtp.sendmail(sender, toclause, msg.as_string())
+    except:
+        print("邮件发送失败！！")
+    else:
+        print("邮件发送成功")
+    finally:
+        smtp.quit()
 
 
+sendMail()
+
+# msg = MIMEMultipart()
+#
+# boby = """
+#     <h3>Hi，all</h3>
+#     <p>附件为本次FM_自动化测试报告。</p>
+#     <p>请解压zip，并使用Firefox打开index.html查看本次自动化测试报告结果。</p>
+#     <p>
+#     <br><img src="cid:image1"></br>
+#     </p>
+#     <p>
+# """
+
+
+# msg.attach(mail_body)
+# fp = open("/image/1.png", 'rb')
+# images = MIMEImage(fp.read())
+# fp.close()
+# images.add_header('Content-ID', '<image1>')
+# msg.attach(images)

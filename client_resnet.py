@@ -5,7 +5,7 @@ from torch import nn
 
 import Common.config as config
 
-from Common.Model.LeNet import LeNet
+from Common.Model.ResNet import ResNet18
 from Common.Utils.data_loader import load_data_fashion_mnist
 from Common.Utils.set_log import setup_logging
 
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     # yaml_path = 'Log/log.yaml'
     # setup_logging(default_path=yaml_path)
 
-    model = LeNet()
+    model = ResNet18()
     batch_size = 512
     train_iter, test_iter = load_data_fashion_mnist(id=args.i, batch_size=batch_size, root='Data/FashionMNIST', num_workers=args.w)
     lr = 0.001

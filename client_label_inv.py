@@ -76,21 +76,21 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='clear_dense_client')
     parser.add_argument('-i', type=int, help="client's id")
     parser.add_argument('-t', type=int, default=10, help="train times locally")
+    parser.add_argument('-m', type=str, help="info")
+    parser.add_argument('-f', type=str, help="file path")
+    parser.add_argument('-w', type=int, help="num_workers")
 
     args = parser.parse_args()
 
-    yaml_path = 'Log/log.yaml'
-    setup_logging(default_path=yaml_path)
+    # yaml_path = 'Log/log.yaml'
+    # setup_logging(default_path=yaml_path)
 
     model = LeNet()
     batch_size = 512
-    train_iter, test_iter = load_data_fashion_mnist(batch_size=batch_size, root='Data/FashionMNIST')
-    if config.attack_type == "label_inversion":
-        train_iter = Label_Inversion(train_iter=train_iter)
-    elif config.attack_type == "label_error":
-        train_iter = Label_Error(train_iter=train_iter)
-    else:
-        pass
+    train_iter, test_iter = load_data_fashion_mnist(id=args.i, batch_size=batch_size, root='Data/FashionMNIST', num_workers=args.w)
+
+    train_iter = Label_Inversion(train_iter=train_iter)
+
     lr = 0.001
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     loss_func = nn.CrossEntropyLoss()
@@ -106,4 +106,5 @@ if __name__ == '__main__':
                                   test_iter=test_iter, config=config, optimizer=optimizer, grad_stub=grad_stub)
 
         client.fl_train(times=args.t)
-        client.write_acc_record(fpath="Eva/kaiyun.txt", info="clear_avg_acc_worker")
+        client.write_acc_record(fpath=args.f, info=args.m)
+
