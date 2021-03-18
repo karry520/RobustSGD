@@ -38,13 +38,26 @@ class FlGrpcServer(FL_GrpcServicer):
                     rst[i] = np.random.normal(self.config.mu[i], self.config.sigma[i], len(rst[i])).tolist()
             elif self.attack_type == "model_negation":
                 print("model negation")
-                rst[0] = (-(np.sum(rst, axis=0) - rst[0])).tolist()
+                for i in range(self.f - 1):
+                    rst[i] = np.random.normal(self.config.mu[i], self.config.sigma[i], len(rst[i])).tolist()
+                total = -(np.sum(rst, axis=0) - rst[self.f - 1])
+                rst[self.f - 1] = total.tolist()
             elif self.attack_type == "grad_scale":
                 print("grad scale")
                 for i in range(self.f):
                     rst[i] = (np.array(rst[i]) * self.config.grad_scale[i]).tolist()
             else:
-                pass
+                print()
+                s = rst[:, 10]
+                tmp = ''
+                for i in s:
+                   tmp += str(i) + " "
+                with open("Eva/grad.txt", 'a+') as f:
+                    f.write(tmp)
+                    f.write('\n')
+
+                print(tmp)
+
             rst = np.array(rst).flatten()
             # add attack
             data_upd = handler(data_in=rst)

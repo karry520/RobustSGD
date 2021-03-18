@@ -5,11 +5,12 @@ from Common.Handler.handler import Handler
 import Common.config as config
 
 import numpy as np
+import argparse
 
 
 class KrumServer(FlGrpcServer):
-    def __init__(self, address, port, config, handler):
-        super(KrumServer, self).__init__(config=config)
+    def __init__(self, address, port, config, handler, attack_type, f, num_workers):
+        super(KrumServer, self).__init__(config=config, attack_type=attack_type, f=f, num_workers=num_workers)
         self.address = address
         self.port = port
         self.config = config
@@ -52,8 +53,14 @@ class KrumGradientHandler(Handler):
 
 
 if __name__ == "__main__":
-    gradient_handler = KrumGradientHandler(num_workers=config.num_workers, f=config.f)
+    parser = argparse.ArgumentParser(description='attack type')
+    parser.add_argument('-a', type=str, help="attack type")
+    parser.add_argument('-f', type=int, help="number of f")
+    parser.add_argument('-w', type=int, help="number of workers")
+    args = parser.parse_args()
+
+    gradient_handler = KrumGradientHandler(num_workers=args.w, f=args.f)
 
     clear_server = KrumServer(address=config.server1_address, port=config.port1, config=config,
-                              handler=gradient_handler)
+                              handler=gradient_handler, attack_type=args.a, f=args.f, num_workers=args.w)
     clear_server.start()

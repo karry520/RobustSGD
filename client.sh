@@ -1,8 +1,8 @@
 for((i=10;i<=19;i++));
 do   
-    python client_mean.py -i $i -t 5 -m $1 -f "Eva/kaiyun.txt" -w 20 &
+    python client_mean.py -i $i -t 5 -m $1 -f "Eva/mean.txt" -w 20 &
 done
-#for((i=18;i<=19;i++));
+#for((i=12;i<=19;i++));
 #do
 #    python client_label_inv.py -i $i -t 5 -m $1 -f "Eva/kaiyun.txt" -w 20 &
 #done
