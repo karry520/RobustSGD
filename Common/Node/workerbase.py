@@ -10,7 +10,8 @@ logger = logging.getLogger('client.workerbase')
 
 class WorkerBase(metaclass=ABCMeta):
     def __init__(self, model, loss_func, train_iter, test_iter, config, optimizer):
-        self.model = model
+        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        self.model = model.to(self.device)
         self.loss_func = loss_func
 
         self.train_iter = train_iter
@@ -22,7 +23,7 @@ class WorkerBase(metaclass=ABCMeta):
         # Accuracy record
         self.acc_record = [0]
 
-        self.device = torch.device('cpu')
+        # self.device = torch.device('cpu')
         self._level_length = None
         self._grad_len = 0
         self._gradients = None
@@ -56,8 +57,8 @@ class WorkerBase(metaclass=ABCMeta):
 
         for param in self.model.parameters():
             self._level_length.append(param.grad.numel() + self._level_length[-1])
-            self._gradients += param.grad.view(-1).numpy().tolist()
-
+            # self._gradients += param.grad.view(-1).numpy().tolist()
+            self._gradients += param.grad.view(-1).cpu().numpy().tolist()
         self._grad_len = len(self._gradients)
         return loss.cpu().item(), y_hat
 
@@ -72,7 +73,7 @@ class WorkerBase(metaclass=ABCMeta):
         idx = 0
         for param in self.model.parameters():
             tmp = self._gradients[self._level_length[idx]:self._level_length[idx + 1]]
-            grad_re = torch.tensor(tmp)
+            grad_re = torch.tensor(tmp).to(self.device)
             grad_re = grad_re.view(param.grad.size())
 
             param.grad = grad_re
@@ -95,6 +96,7 @@ class WorkerBase(metaclass=ABCMeta):
                 self.optimizer.step()
                 train_l_sum += l.cpu().item()
                 train_acc_sum += (y_hat.argmax(dim=1) == y).sum().cpu().item()
+
                 n += y.shape[0]
                 batch_count += 1
 

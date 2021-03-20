@@ -22,9 +22,10 @@ gradient_frac = 2 ** 10
 gradient_rand = 2 ** 8
 
 # server1_address = "127.0.0.1"
-server1_address = "192.168.124.163"
-port1 = 51019
-
+# server1_address = "192.168.124.163"
+server1_address = "192.168.126.12"
+port1 = 51018
+# port1 = 51019
 server2_address = "127.0.0.1"
 port2 = 51011
 

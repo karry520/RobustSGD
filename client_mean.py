@@ -42,8 +42,10 @@ if __name__ == '__main__':
 
     # yaml_path = 'Log/log.yaml'
     # setup_logging(default_path=yaml_path)
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-    model = LeNet()
+    model = LeNet().to(device)
+
     batch_size = 512
     train_iter, test_iter = load_data_fashion_mnist(id=args.i, batch_size=batch_size, root='Data/FashionMNIST', num_workers=args.w)
     lr = 0.001
