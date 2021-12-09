@@ -16,9 +16,9 @@ import argparse
 
 
 class ClearDenseClient(WorkerBase):
-    def __init__(self, client_id, model, loss_func, train_iter, test_iter, config, optimizer, grad_stub):
+    def __init__(self, client_id, model, loss_func, train_iter, test_iter, config, optimizer, grad_stub, cuda):
         super(ClearDenseClient, self).__init__(model=model, loss_func=loss_func, train_iter=train_iter,
-                                               test_iter=test_iter, config=config, optimizer=optimizer)
+                                               test_iter=test_iter, config=config, optimizer=optimizer, cuda=cuda)
         self.client_id = client_id
         self.grad_stub = grad_stub
 
@@ -79,6 +79,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', type=str, help="info")
     parser.add_argument('-f', type=str, help="file path")
     parser.add_argument('-w', type=int, help="num_workers")
+    parser.add_argument('-c', type=str, help="cuda")
 
     args = parser.parse_args()
 
@@ -88,7 +89,6 @@ if __name__ == '__main__':
     model = LeNet()
     batch_size = 512
     train_iter, test_iter = load_data_fashion_mnist(id=args.i, batch_size=batch_size, root='Data/FashionMNIST', num_workers=args.w)
-
     train_iter = Label_Inversion(train_iter=train_iter)
 
     lr = 0.001
@@ -103,7 +103,7 @@ if __name__ == '__main__':
         grad_stub = FL_GrpcStub(grad_channel)
 
         client = ClearDenseClient(client_id=args.i, model=model, loss_func=loss_func, train_iter=train_iter,
-                                  test_iter=test_iter, config=config, optimizer=optimizer, grad_stub=grad_stub)
+                                  test_iter=test_iter, config=config, optimizer=optimizer, grad_stub=grad_stub, cuda=args.c)
 
         client.fl_train(times=args.t)
         client.write_acc_record(fpath=args.f, info=args.m)

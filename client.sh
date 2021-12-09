@@ -1,30 +1,5 @@
-#for((i=10;i<=19;i++));
-#do   
-#    python client_mean.py -i $i -t 5 -m $1 -f "Eva/krum.txt" -w 20 &
-#done
-for((i=10;i<=19;i++));
+for((i=0;i<=4;i++));
 do
-    python client_label_inv.py -i $i -t 5 -m $1 -f "Eva/krum.txt" -w 20 &
+    python client_mean.py -i $i -t 5 -m $1 -f "Eva/text.txt" -w 5 &
 done
-
-
-#
-#sleep 125m
-#pkill -f client_mean.py
-#
-#for((i=16;i<=20;i++));
-#do
-#    python client_mean.py -i $i -t 5 -m "gaussian" -f "Eva/kaiyun.txt" &
-#done
-#
-#sleep 125m
-#pkill -f client_mean.py
-#
-#for((i=16;i<=20;i++));
-#do
-#    python client_mean.py -i $i -t 5 -m "gaussian" -f "Eva/kaiyun.txt" &
-#done
-#
-#sleep 125m
-#pkill -f client_mean.py
 

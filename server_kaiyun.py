@@ -24,9 +24,10 @@ class KaiyunServer(FlGrpcServer):
 
 
 class KaiyunGradientHandler(Handler):
-    def __init__(self, num_workers):
+    def __init__(self, num_workers, f):
         super(KaiyunGradientHandler, self).__init__()
         self.num_workers = num_workers
+        self.f = f
 
     def computation(self, data_in):
         grad_in = np.array(data_in).reshape((self.num_workers, -1))
@@ -52,23 +53,23 @@ class KaiyunGradientHandler(Handler):
 
         mask = (tmp1 & compare2) | (tmp2 & ~compare2)
 
+        # return (np.sum(data_in * mask, axis=0) / np.sum(mask, axis=0)).tolist()
         mask_sum = np.sum(mask, axis=1)
-        f = int(num_workers / 2)
-        mask_index = np.argpartition(mask_sum, -f)[-f:]
+        f = int(num_workers / 4)
+        mask_index = np.argpartition(mask_sum, -(num_workers - f))[-(num_workers - f):]
         mask_choise = mask[mask_index]
         data_choise = data_in[mask_index]
-        data_nomal = np.sum(np.abs(data_choise * mask_choise), axis=1)
-        data_nomal_mean = np.mean(data_nomal, axis=0)
-        data_choise = data_choise * np.array(data_nomal > data_nomal_mean, dtype=int).reshape(f, 1)
 
-        print("mask_index:", mask_index)
-        print("data_nomal:", data_nomal)
-        print("data_nomal mean:", data_nomal_mean)
-        print("data_choise:", np.array(data_nomal > data_nomal_mean, dtype=int))
+        data_nomal = np.sum(np.abs(data_choise), axis=1) - np.sum(data_choise * mask_choise, axis=1)
+        nomal_choise = np.argpartition(data_nomal, num_workers - 2 * f)[:num_workers - 2 * f]
+        # print("mask_index:", mask_index)
+        # print("data_nomal", data_nomal)
+        # print("nomal_choise", nomal_choise)
 
-        # return data_choise[np.argmax(data_nomal)].tolist()
-        # return data_in[np.argmax(np.sum(mask, axis=1)), :]
-        return np.mean(data_choise, axis=0).tolist()
+        count = np.sum(np.array(mask_index < self.f, dtype=int))
+        print("=" * 30)
+        print("error count", count)
+        return np.mean(data_choise[nomal_choise], axis=0).tolist()
 
 
 if __name__ == "__main__":
@@ -78,7 +79,7 @@ if __name__ == "__main__":
     parser.add_argument('-w', type=int, help="number of workers")
     args = parser.parse_args()
 
-    gradient_handler = KaiyunGradientHandler(num_workers=args.w)
+    gradient_handler = KaiyunGradientHandler(num_workers=args.w, f=args.f)
 
     clear_server = KaiyunServer(address=config.server1_address, port=config.port1, config=config,
                                 handler=gradient_handler, attack_type=args.a, f=args.f, num_workers=args.w)

@@ -47,16 +47,17 @@ class FlGrpcServer(FL_GrpcServicer):
                 for i in range(self.f):
                     rst[i] = (np.array(rst[i]) * self.config.grad_scale[i]).tolist()
             else:
-                print()
-                s = rst[:, 10]
-                tmp = ''
-                for i in s:
-                   tmp += str(i) + " "
-                with open("Eva/grad.txt", 'a+') as f:
-                    f.write(tmp)
-                    f.write('\n')
-
-                print(tmp)
+                pass
+                # print()
+                # s = rst[:, 10]
+                # tmp = ''
+                # for i in s:
+                #    tmp += str(i) + " "
+                # with open("Eva/grad.txt", 'a+') as f:
+                #     f.write(tmp)
+                #     f.write('\n')
+                #
+                # print(tmp)
 
             rst = np.array(rst).flatten()
             # add attack

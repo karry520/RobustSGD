@@ -9,8 +9,8 @@ logger = logging.getLogger('client.workerbase')
 
 
 class WorkerBase(metaclass=ABCMeta):
-    def __init__(self, model, loss_func, train_iter, test_iter, config, optimizer):
-        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    def __init__(self, model, loss_func, train_iter, test_iter, config, optimizer, cuda):
+        self.device = torch.device(cuda if torch.cuda.is_available() else 'cpu')
         self.model = model.to(self.device)
         self.loss_func = loss_func
 
@@ -22,6 +22,7 @@ class WorkerBase(metaclass=ABCMeta):
 
         # Accuracy record
         self.acc_record = [0]
+        self.loss = [0]
 
         # self.device = torch.device('cpu')
         self._level_length = None
@@ -95,13 +96,14 @@ class WorkerBase(metaclass=ABCMeta):
                 l.backward()
                 self.optimizer.step()
                 train_l_sum += l.cpu().item()
-                train_acc_sum += (y_hat.argmax(dim=1) == y).sum().cpu().item()
+                train_acc_sum += (y_hat.argmax(dim=1).to(self.device) == y.to(self.device)).sum().cpu().item()
 
                 n += y.shape[0]
                 batch_count += 1
 
             test_acc = evaluate_accuracy(self.test_iter, self.model)
             self.eva_record += [test_acc]
+            self.loss += [train_l_sum / batch_count]
             print('epoch %d, loss %.4f, train acc %.3f, test acc %.3f, time %.1f sec'
                   % (epoch + 1, train_l_sum / batch_count, train_acc_sum / n, test_acc, time.time() - start))
 
@@ -121,7 +123,7 @@ class WorkerBase(metaclass=ABCMeta):
                     l.backward()
                     self.optimizer.step()
                     train_l_sum += l.cpu().item()
-                    train_acc_sum += (y_hat.argmax(dim=1) == y).sum().cpu().item()
+                    train_acc_sum += (y_hat.argmax(dim=1).to(self.device) == y.to(self.device)).sum().cpu().item()
                     n += y.shape[0]
                     batch_count += 1
 
@@ -131,23 +133,28 @@ class WorkerBase(metaclass=ABCMeta):
                 self.update()
                 self.upgrade()
                 train_l_sum += loss
-                train_acc_sum += (y_hat.argmax(dim=1) == y).sum().cpu().item()
+                train_acc_sum += (y_hat.argmax(dim=1).to(self.device) == y.to(self.device)).sum().cpu().item()
                 n += y.shape[0]
                 batch_count += 1
 
             test_acc = evaluate_accuracy(self.test_iter, self.model)
             self.acc_record += [test_acc]
+            self.loss += [train_l_sum / batch_count]
             print('epoch %d, loss %.4f, train acc %.3f, test acc %.3f, time %.1f sec'
                   % (epoch + 1, train_l_sum / batch_count, train_acc_sum / n, test_acc, time.time() - start))
 
     def write_acc_record(self, fpath, info):
-        s = ""
-        for i in self.acc_record:
-            s += str(i) + " "
+        s = "acc\n"
+        l = "loss\n"
+        for i, acc in enumerate(self.acc_record):
+            s += str(acc) + " "
+            l += str(self.loss[i]) + " "
         s += '\n'
+        l += '\n'
         with open(fpath, 'a+') as f:
             f.write(info + '\n')
             f.write(s)
+            f.write(l)
             f.write("=" * 20)
 
     @abstractmethod
